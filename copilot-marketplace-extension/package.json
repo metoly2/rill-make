@@ -25,6 +25,12 @@
       }
     ]
   },
+  "files": [
+    "extension.js",
+    "README.md",
+    "templates/**",
+    "LICENSE"
+  ],
   "extensionKind": [
     "workspace"
   ],
