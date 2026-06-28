@@ -9,7 +9,7 @@ This repository is the plugin source. Claude distribution is through the [`rcrsr
 This repo now includes first-class GitHub Copilot support:
 
 - `.github/copilot-instructions.md` gives Copilot the same architectural constraints used by the Claude plugin (blueprint-first design, architect/engineer/reviewer separation, and rill-specific invariants).
-- `.github/prompts/create-rill-package.prompt.md` provides a reusable agent prompt that runs the same 8-phase workflow as `/rill-make:create-rill-package`.
+- `.github/prompts/create-rill-package.prompt.md` provides a reusable agent prompt that mirrors `/rill-make:create-rill-package`, including Phase 3.5 sibling-pattern scan, Phase 4.5 bootstrap/install/probe, reviewer validation, and the Phase 7h runtime smoke test.
 
 Usage in VS Code Copilot Chat:
 

@@ -10,8 +10,8 @@ The same package runs in three contexts without code changes:
 
 |Context|Command|What it uses|
 |---|---|---|
-|Local development|`npm run dev` (`rill run .`)|Reads the package directory directly|
-|HTTP agent server|`npm run build && npm run serve`|`rill build` emits a self-contained bundle to `build/`, then `@rcrsr/rill-agent-http` serves it over HTTP (`POST /agents/:name/run`)|
+|Local development|`rill run`|Reads the package directory directly|
+|HTTP agent server|`rill build --output build && node server.js`|`rill build` emits a self-contained bundle to `build/`, then `@rcrsr/rill-agent-http` serves it over HTTP (`POST /agents/:name/run`)|
 |Azure AI Foundry|Deploy the `build/` output with `@rcrsr/rill-agent-foundry`|Same bundle, wrapped in the Foundry Responses API harness|
 
 ### Relationship to `rill-agent`
@@ -25,7 +25,7 @@ This separation matters because:
 - **Isolation**: credentials stay in `.env`, never in scripts. Static configuration stays in `rill-config.json`, never hard-coded.
 - **Composition**: one agent can call another via `@rcrsr/rill-agent-ext-ahi`, which registers `ahi::<agentName>` functions in the rill runtime. Co-located agents skip HTTP; remote agents resolve through static URLs.
 
-The skill in this plugin generates the package. `rill-agent` (separate repo) runs it in production. You move from one to the other by running `npm run build` and pointing a server at the output.
+The skill in this plugin generates the package. `rill-agent` (separate repo) runs it in production. You move from one to the other by running `rill build --output build` and pointing a server at the output.
 
 ## 1. Prerequisites
 
@@ -135,15 +135,17 @@ Expected flow:
 1. Copilot checks prerequisites (`node`, `npm`, `rill`).
 2. Copilot gathers clarifications (feeds list, output path, model/provider, failure policy).
 3. Copilot writes `<package>/.rill-design/blueprint.md`.
-4. Copilot generates `rill-config.json`, prompt files, scripts, and any extension stubs.
-5. Copilot runs `rill check` and `rill check --types` (if `extensions/` exists).
-6. Copilot outputs a provisioning checklist for required `${VAR_NAME}` values in `.env`.
+4. Copilot bootstraps and installs selected extensions, then probes call surfaces into `<package>/.rill-design/extension-surfaces.md`.
+5. Copilot generates `rill-config.json`, prompt files, scripts, and any extension stubs from the frozen blueprint.
+6. Copilot runs `rill check` and `rill check --types` (if `extensions/` exists).
+7. Copilot performs one runtime smoke test with `rill run` (or records `SMOKE TEST: SKIPPED (no credentials)` if `.env` is not populated).
+8. Copilot outputs a provisioning checklist for required `${VAR_NAME}` values in `.env`.
 
 Then run the generated package:
 
 ```bash
 cd <package>
-npm run dev
+rill run
 ```
 
 ### What the Skill Does
@@ -180,12 +182,12 @@ Once `.env` is populated, tell the skill to run the package:
 run the package
 ```
 
-The skill invokes `npm run dev`, observes the output, and helps diagnose runtime issues. This is the verification step that closes out the workflow.
+The skill invokes `rill run` (including required named flags when the main closure has required params), observes the output, and helps diagnose runtime issues. This is the verification step that closes out the workflow.
 
 For HTTP deployment (optional):
 
 ```bash
-npm run build && npm run serve
+rill build --output build && node server.js
 ```
 
 ## Troubleshooting
